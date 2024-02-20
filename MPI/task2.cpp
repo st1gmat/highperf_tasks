@@ -2,12 +2,13 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
-//#include <iomanip>
+#include <chrono>
 
 //Посчитать сумму массива чисел. Показать зависимость времени работы программы от
 //количества чисел в массиве(10, 1000, 10000000).
 
 int main(int argc, char** argv) {
+    auto start = std::chrono::high_resolution_clock::now();
     MPI_Init(&argc, &argv);
 
     int rank, size;
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
         std::vector<int> array(sizes[s]);
         long long int sum = 0;
 
-        
+
         srand(time(nullptr) + rank); // + rank чтобы при новой генерации рандомные числа не повторялись
         for (int i = 0; i < sizes[s]; ++i) {
             array[i] = rand() % 100;
@@ -36,12 +37,15 @@ int main(int argc, char** argv) {
         double end = MPI_Wtime();
 
         std::cout << "process " << rank << ": array size = " << sizes[s] << ", time= " << (end - start) << std::endl;
-        /*if (rank == 0) {
-            double time = end - start;
-            std::cout << std::setw(15) << sizes[s] << std::setw(15) << time << std::endl;
-        }*/
     }
 
     MPI_Finalize();
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    
+    std::cout << "overall time for process " << rank << " : " << elapsed_seconds.count() << "\n";
+
     return 0;
 }
